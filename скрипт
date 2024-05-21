@@ -1,0 +1,32 @@
+import subprocess
+import re
+
+def compare_numbers(url1, url2):
+
+    first = subprocess.run(["curl", url1], capture_output=True, text=True)
+    second = subprocess.run(["curl", url2], capture_output=True, text=True)
+
+    pattern_of_first = r'"result"\s*:\s*"([^"]+)"'
+    match_of_first = re.search(pattern_of_first, first.stdout)
+
+    pattern_of_second = r'"height"\s*:\s*(\d+)'
+    match_of_second = re.search(pattern_of_second, second.stdout)
+
+    result = match_of_first.group(0)
+    height = match_of_second.group(0)
+
+    modified_result0 = result.replace('"result":', '')
+    modified_result = int(modified_result0.replace('"', ''), 16)
+    modified_height = int(height.replace('"height": ', ''))
+
+    if modified_result > modified_height:
+        return f"{result} больше {height}"
+    elif modified_result < modified_height:
+        return f"{result} меньше {height}"
+    else:
+        return f"{result} равно {height}"
+
+url1 = "https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=YourApiKeyToken"
+url2 = "https://api.blockcypher.com/v1/eth/main"
+result = compare_numbers(url1, url2)
+print(result)
